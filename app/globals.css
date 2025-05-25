@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
@@ -26,12 +26,22 @@ body {
 }
 
 /* Ocultar los spinners en navegadores WebKit (Chrome, Safari) */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 /* Ocultar los spinners en Firefox */
-input[type=number] {
-    -moz-appearance: textfield;
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* min height window */
+.min-height-responsive {
+  min-height: calc(100dvh - 186px);
+}
+@media (min-width: 1024px) {
+  .min-height-responsive {
+    min-height: calc(100vh - 194px);
+  }
 }

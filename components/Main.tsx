@@ -4,58 +4,45 @@ import Container from './common/Container'
 import Title from './common/Title'
 import Button from './common/Button'
 import ValuesGrid from './ValuesGrid'
-import FrequencyTable from './FrequencyTable'
 import {
   calculateMedian,
   calculateModa,
-  createTable,
+  createGroupedArrays,
+  handleKeyPress,
   roundNumber,
 } from '@/utils/utils'
 import ButtonsTable from './ButtonsTable'
-
-export interface NumberFrequency {
-  X: number
-  f: number
-  F?: number
-  h?: number
-  p?: number
-  H?: number
-  P?: number
-  fxX?: number
-  XminProd?: number
-  XminProd2?: number
-  fxminProd2?: number
-}
+import DirectDataTable from './DirectDataTable'
+import GroupedDataTable from './GroupedDataTable'
+import { createDirectTable, createGroupedTable } from '@/utils/createTables'
+import { DirectDataFrequency, GroupedDataFrequency } from '@/interface'
+import pushToast from '@/utils/pushToast'
 
 const Main = () => {
+  // input and general values
+  const [inputValue, setInputValue] = useState<number | ''>('')
   const [numbersArr, setNumbersArr] = useState<Array<number>>([])
   const [roundedNumbersArr, setRoundedNumbersArr] = useState<Array<number>>([])
-  const [numbers, setNumbers] = useState<number | ''>('')
-  const [results, setResults] = useState<Array<NumberFrequency>>([])
-  const [promedio, setPromedio] = useState<number>(0)
+  const N = roundedNumbersArr.length
+  // direct data results
+  const [directDataResults, setDirectDataResults] = useState<Array<DirectDataFrequency>>([])
+  const [directDataPromedio, setDirectDataPromedio] = useState<number>(0)
   const [median, setMedian] = useState<number>(0)
   const [moda, setModa] = useState<Array<number>>([])
-  const desviacion =
-    results.reduce((acc, data) => acc + data.fxminProd2!, 0) /
-    roundedNumbersArr.length
-  const N = roundedNumbersArr.length
-  const tableHead = [
-    'n',
-    'X',
-    'f',
-    'F',
-    'h',
-    'p',
-    'H',
-    'P',
-    'f . X',
-    'X - X̅',
-    '(X - X̅)²',
-    'f (X - X̅)²',
-    '',
-  ]
-  const otherData = [
-    { title: 'Media aritmética (X̅)', value: `${promedio} pts` },
+  const desviacion = directDataResults.reduce((acc, data) => acc + data.fxminProd2!, 0) / N
+  // grouped data results
+  const [ni, setNi] = useState<number | '' | undefined>('')
+  const [nota, setNota] = useState<{ Xi: number; Xs: number }>({
+    Xi: 0,
+    Xs: 0,
+  })
+  const [aT, setAT] = useState<number>(0)
+  const [i, setI] = useState<number>(0)
+  const [groupedDataResults, setGroupedDataResults] = useState<Array<GroupedDataFrequency>>([])
+  const viewCreateButtons = directDataResults.length === 0 && groupedDataResults.length === 0
+
+  const otherDirectData = [
+    { title: 'Media aritmética (X̅)', value: `${directDataPromedio} pts` },
     { title: 'Mediana (md)', value: `${median} pts` },
     {
       title: 'Moda (X₀)',
@@ -66,34 +53,75 @@ const Main = () => {
       value: `${Math.sqrt(desviacion).toFixed(2)} pts`,
     },
   ]
+  
+  const otherGroupedData = [
+    { title: 'Xi', value: `${nota.Xi} pts` },
+    { title: 'Xs', value: `${nota.Xs} pts` },
+    { title: 'At', value: `${aT} pts` },
+    { title: 'i', value: `${i} pts` },
+  ]
 
-  const handleOnClick = () => {
-    if (numbers === '') return
-    setNumbersArr((prevArray) => [...prevArray, numbers])
-    const roundedNumber = roundNumber(numbers)
-    setRoundedNumbersArr((prevArray) => [...prevArray, roundedNumber])
-    setNumbers('')
+  const handleInsertValue = () => {
+    if (inputValue === '') return
+    setNumbersArr((prevArray) => [...prevArray, inputValue])
+    setRoundedNumbersArr((prevArray) => [...prevArray, roundNumber(inputValue)])
+    setInputValue('')
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleOnClick()
+  const handleChangeNi = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.valueAsNumber
+    if (isNaN(newValue)) {
+      setNi('')
+    } else {
+      setNi(newValue)
     }
   }
 
-  const handleCreateTable = () => {
-    createTable(roundedNumbersArr, N, setResults, setPromedio)
-    const median = calculateMedian(roundedNumbersArr)
-    setMedian(median)
+  const handleClear = () => {
+    setInputValue('')
+    setNumbersArr([])
+    setRoundedNumbersArr([])
+    setDirectDataResults([])
+    setDirectDataPromedio(0)
+    setMedian(0)
+    setModa([])
+    setNi('')
+    setNota({ Xi: 0, Xs: 0 })
+    setAT(0)
+    setI(0)
+    setGroupedDataResults([])
+  }
+
+  const handleCreateDirectTable = () => {
+    createDirectTable(
+      roundedNumbersArr,
+      setDirectDataResults,
+      setDirectDataPromedio
+    )
+    const newMedian = calculateMedian(roundedNumbersArr)
+    setMedian(newMedian)
     const newModa = calculateModa(roundedNumbersArr)
     setModa(newModa)
   }
 
-  const handleClear = () => {
-    setNumbersArr([])
-    setRoundedNumbersArr([])
-    setNumbers('')
-    setResults([])
+  const handleCreateGroupedTable = () => {
+    if (ni === '' || ni === undefined) {
+      pushToast.error('Please insert the interval number')
+      return
+    }
+    const minNumber = Math.min(...roundedNumbersArr)
+    const maxNumber = Math.max(...roundedNumbersArr)
+    setNota({ Xi: minNumber, Xs: maxNumber })
+    const newAT = maxNumber - minNumber + 1
+    setAT(newAT)
+    const newI = roundNumber(newAT / ni)
+    setI(newI)
+    const newGroupedArray = createGroupedArrays(minNumber, maxNumber, newI)
+    createGroupedTable(
+      roundedNumbersArr,
+      newGroupedArray,
+      setGroupedDataResults
+    )
   }
 
   const handleEraser = () => {
@@ -102,9 +130,9 @@ const Main = () => {
   }
 
   return (
-    <Container className='py-5 flex flex-col gap-8'>
+    <Container className='py-5 flex flex-col gap-8 h-full'>
       {/* insert numbers section */}
-      {results.length === 0 && (
+      {viewCreateButtons && (
         <section className='w-full flex flex-col gap-2'>
           <Title title='Insert numbers here:' />
           <div className='flex flex-col md:flex-row gap-2'>
@@ -112,41 +140,43 @@ const Main = () => {
               <input
                 type='number'
                 className='bg-white text-black rounded-xl px-4 h-9 outline-0'
-                value={numbers}
-                onChange={(e) => setNumbers(e.target.valueAsNumber)}
-                onKeyDown={handleKeyPress}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.valueAsNumber)}
+                onKeyDown={(e) => handleKeyPress(e, handleInsertValue)}
               />
               <Button
                 type={'button'}
-                onClick={handleOnClick}
+                onClick={handleInsertValue}
                 className='w-full md:w-fit'
               >
                 Insert
               </Button>
             </div>
             {roundedNumbersArr.length > 0 && (
-              <>
-                {results.length === 0 && (
-                  <Button
-                    type={'reset'}
-                    onClick={handleEraser}
-                    className='w-full md:w-fit'
-                  >
-                    Eraser
-                  </Button>
-                )}
-                <ButtonsTable
-                  handleClear={handleClear}
-                  handleCreateTable={handleCreateTable}
-                  className='hidden md:flex'
-                  results={results}
-                />
-              </>
+              <Button
+                type={'reset'}
+                onClick={handleEraser}
+                className='w-full md:w-fit'
+              >
+                Eraser
+              </Button>
             )}
           </div>
         </section>
       )}
-
+      {groupedDataResults.length === 0 && (
+        <section className='w-full flex flex-col gap-2'>
+          <Title title='Insert interval number here:' />
+          <div className='flex flex-col md:flex-row gap-2'>
+            <input
+              type='number'
+              className='bg-white text-black rounded-xl px-4 h-9 outline-0'
+              value={ni}
+              onChange={handleChangeNi}
+            />
+          </div>
+        </section>
+      )}
       {/* frequency distribution section */}
       {roundedNumbersArr.length > 0 && (
         <section className='w-full flex flex-col md:flex-row gap-8'>
@@ -158,34 +188,42 @@ const Main = () => {
       {/* create table button */}
       {roundedNumbersArr.length > 0 && (
         <ButtonsTable
+          handleCreateDirectTable={handleCreateDirectTable}
+          handleCreateGroupedTable={handleCreateGroupedTable}
           handleClear={handleClear}
-          handleCreateTable={handleCreateTable}
-          className='flex md:hidden'
-          results={results}
+          directDataResults={directDataResults}
+          groupedDataResults={groupedDataResults}
         />
       )}
-
       {/* frequency table */}
-      {results.length > 0 && (
+      {directDataResults.length > 0 && (
         <>
-          <Button
-            type={'reset'}
-            onClick={handleClear}
-            className='w-fit hidden md:flex'
-          >
-            Clear
-          </Button>
           <section className='flex flex-col gap-2'>
-            <Title title='Data Table' />
+            <Title title='Direct Data Table' />
             <div>
-              {otherData.map((data, idx) => (
+              {otherDirectData.map((data, idx) => (
                 <h2 key={idx} className='text-semibold text-lg md:text-xl'>
                   {data.title}: {data.value}
                 </h2>
               ))}
             </div>
           </section>
-          <FrequencyTable tableHead={tableHead} tableData={results} />
+          <DirectDataTable tableData={directDataResults} />
+        </>
+      )}
+      {groupedDataResults.length > 0 && (
+        <>
+          <section className='flex flex-col gap-2'>
+            <Title title='Grouped Data Table' />
+            <div>
+              {otherGroupedData.map((data, idx) => (
+                <h2 key={idx} className='text-semibold text-lg md:text-xl'>
+                  {data.title}: {data.value}
+                </h2>
+              ))}
+            </div>
+          </section>
+          <GroupedDataTable tableData={groupedDataResults} />
         </>
       )}
     </Container>

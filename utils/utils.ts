@@ -1,4 +1,11 @@
-import { NumberFrequency } from '@/components/Main'
+export const handleKeyPress = (
+  e: React.KeyboardEvent<HTMLInputElement>,
+  func: () => void
+) => {
+  if (e.key === 'Enter') {
+    func()
+  }
+}
 
 export const roundNumber = (num: number) => {
   const integerPart = Math.floor(num)
@@ -14,67 +21,6 @@ export const roundNumber = (num: number) => {
       return integerPart + 1
     }
   }
-}
-
-export const createTable = (
-  roundedNumbersArr: Array<number>,
-  N: number,
-  setResults: (value: Array<NumberFrequency>) => void,
-  setPromedio: (value: number) => void,
-) => {
-  // Contar las ocurrencias de cada número
-  const frequencyMap: { [key: number]: number } = {}
-  roundedNumbersArr.forEach((num) => {
-    frequencyMap[num] = (frequencyMap[num] || 0) + 1
-  })
-  // Crear un array de números únicos
-  const uniqueNumbers = Object.keys(frequencyMap).map(Number)
-  // Crear el nuevo array de objetos
-  const resultArray: NumberFrequency[] = uniqueNumbers.map((num) => ({
-    X: num,
-    f: frequencyMap[num],
-  }))
-  // Ordenar de menor a mayor
-  resultArray.sort((a, b) => a.X - b.X)
-  // Calcular la propiedad F
-  let cumulativeF = 0
-  resultArray.forEach((item) => {
-    cumulativeF += item.f
-    item.F = cumulativeF // Ahora F es reconocida
-  })
-  // Agregar números faltantes con f = 0 dentro del rango
-  const minNumber = Math.min(...uniqueNumbers)
-  const maxNumber = Math.max(...uniqueNumbers)
-  for (let i = minNumber; i <= maxNumber; i++) {
-    if (!frequencyMap[i]) {
-      resultArray.push({ X: i, f: 0, F: cumulativeF }) // Mantener el valor anterior de F
-    }
-  }
-  // Ordenar nuevamente después de agregar números faltantes
-  resultArray.sort((a, b) => a.X - b.X)
-  // Actualizar F y calcular h, p, H, P para los números
-  cumulativeF = 0 // Reiniciar cumulativeF para calcular correctamente
-  resultArray.forEach((item) => {
-    cumulativeF += item.f
-    item.F = cumulativeF // Actualizar F
-    item.h = parseFloat((item.f / N).toFixed(2))
-    item.p = parseFloat((item.h * 100).toFixed(2))
-    item.H = parseFloat((item.F / N).toFixed(2))
-    item.P = parseFloat((item.H * 100).toFixed(2))
-    item.fxX = item.f * item.X
-  })
-
-  const totalfxX = resultArray.reduce((acc, data) => acc + data.fxX!, 0)
-  const promedio = roundNumber(totalfxX / roundedNumbersArr.length)
-  setPromedio(promedio)
-
-  resultArray.forEach((item) => {
-    cumulativeF += item.f
-    item.XminProd = item.X - promedio
-    item.XminProd2 = item.XminProd * item.XminProd
-    item.fxminProd2 = item.f * item.XminProd2
-  })
-  setResults(resultArray)
 }
 
 export const calculateMedian = (arr: Array<number>): number => {
@@ -119,4 +65,25 @@ export const calculateModa = (arr: Array<number>) => {
   })
 
   return mostFrequentNumbers
+}
+
+export const createGroupedArrays = (
+  minNumber: number,
+  maxNumber: number,
+  newI: number,
+) => {
+  // Crear los intervalos
+  const intervals = []
+  let start = minNumber
+  while (start <= maxNumber) {
+    const end = start + newI - 1 // -1 para incluir el límite superior en el intervalo
+    intervals.push([start, end])
+    start = end + 1 // El siguiente intervalo comienza justo después del límite superior
+  }
+
+  // Asegurarse de que el último intervalo incluya el maxNumber
+  if (intervals[intervals.length - 1][1] < maxNumber) {
+    intervals[intervals.length - 1][1] = maxNumber
+  }
+  return intervals
 }

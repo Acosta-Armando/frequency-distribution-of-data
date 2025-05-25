@@ -1,37 +1,50 @@
 import React, { FC } from 'react'
 import Button from './common/Button'
-import { NumberFrequency } from './Main'
+import { DirectDataFrequency, GroupedDataFrequency } from '@/interface'
 
 interface ButtonsTableProps {
-  handleCreateTable: () => void
+  handleCreateDirectTable: () => void
+  handleCreateGroupedTable: () => void
   handleClear: () => void
   className?: string
-  results: Array<NumberFrequency>
+  directDataResults: Array<DirectDataFrequency>
+  groupedDataResults: Array<GroupedDataFrequency>
 }
 
 const ButtonsTable: FC<ButtonsTableProps> = ({
-  handleCreateTable,
+  handleCreateDirectTable,
+  handleCreateGroupedTable,
   handleClear,
   className = 'flex',
-  results,
+  directDataResults,
+  groupedDataResults,
 }) => {
   return (
     <section
-      className={`flex-col md:flex-row gap-2 items-center justify-center ${
+      className={`flex flex-col md:flex-row gap-2 items-center ${
         className ?? ''
       }`}
     >
-      {results.length === 0 && (
+      {directDataResults.length === 0 && (
         <Button
           type={'button'}
-          onClick={handleCreateTable}
+          onClick={handleCreateDirectTable}
           className='w-full md:w-fit'
         >
-          Create tables
+          Create Direct Data Table
+        </Button>
+      )}
+      {groupedDataResults.length === 0 && (
+        <Button
+          type={'button'}
+          onClick={handleCreateGroupedTable}
+          className='w-full md:w-fit'
+        >
+          Create Grouped Data Table
         </Button>
       )}
       <Button type={'reset'} onClick={handleClear} className='w-full md:w-fit'>
-        Clear
+        Clear All
       </Button>
     </section>
   )
