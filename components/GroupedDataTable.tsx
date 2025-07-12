@@ -18,7 +18,25 @@ const GroupedDataTable: FC<GroupedDataTableProps> = ({ tableData }) => {
   const totalf = tableData.reduce((acc, data) => acc + data.f, 0)
   const totalh = tableData.reduce((acc, data) => acc + data.h!, 0).toFixed(2)
   const totalp = tableData.reduce((acc, data) => acc + data.p!, 0)
-  const tableHead = ['n', 'Li - Ls', 'Xi - Xs', 'f', 'F', 'h', 'p', 'H', 'P']
+  const totalfxXm = tableData.reduce((acc, data) => acc + data.fxXm!, 0)
+  const totalfXmminProd2 = tableData.reduce((acc, data) => acc + data.fXmminProd2!, 0)
+  const tableHead = [
+    'n',
+    'Li - Ls',
+    'Xi - Xs',
+    'f',
+    'F',
+    'h',
+    'p',
+    'H',
+    'P',
+    'Xm',
+    'f . Xm',
+    'Xm - X̅',
+    '(Xm - X̅)²',
+    'f (X - X̅)²',
+    ''
+  ]
 
   return (
     <section className='w-full flex flex-col gap-2 overflow-x-auto'>
@@ -31,7 +49,9 @@ const GroupedDataTable: FC<GroupedDataTableProps> = ({ tableData }) => {
                 <TableCell
                   key={idx}
                   align='center'
-                  className={`${[1, 2].includes(idx) ? 'min-w-28' : 'min-w-fit'}`}
+                  className={`${
+                    [1, 2].includes(idx) ? 'min-w-28' : 'min-w-fit'
+                  }`}
                 >
                   {head}
                 </TableCell>
@@ -40,7 +60,7 @@ const GroupedDataTable: FC<GroupedDataTableProps> = ({ tableData }) => {
           </TableHead>
           <TableBody>
             {tableData.map((data, idx) => {
-              const { LiLs, XiXs, f, F, h, p, H, P } = data
+              const { LiLs, XiXs, f, F, h, p, H, P, Xm, fxXm, XmminProd, XmminProd2, fXmminProd2 } = data
               return (
                 <TableRow className='cursor-pointer' key={idx} hover>
                   <TableCell align='center'>{idx + 1}</TableCell>
@@ -52,6 +72,12 @@ const GroupedDataTable: FC<GroupedDataTableProps> = ({ tableData }) => {
                   <TableCell align='center'>{p}%</TableCell>
                   <TableCell align='center'>{H}</TableCell>
                   <TableCell align='center'>{P}%</TableCell>
+                  <TableCell align='center'>{Xm}</TableCell>
+                  <TableCell align='center'>{fxXm}</TableCell>
+                  <TableCell align='center'>{XmminProd}</TableCell>
+                  <TableCell align='center'>{XmminProd2}</TableCell>
+                  <TableCell align='center'>{fXmminProd2}</TableCell>
+                  <TableCell align='center'></TableCell>
                 </TableRow>
               )
             })}
@@ -59,10 +85,20 @@ const GroupedDataTable: FC<GroupedDataTableProps> = ({ tableData }) => {
               <TableCell align='center'>∑</TableCell>
               <TableCell align='center'></TableCell>
               <TableCell align='center'>pts</TableCell>
-              <TableCell align='center'>{totalf} <br /> participantes</TableCell>
+              <TableCell align='center'>
+                {totalf} <br /> participantes
+              </TableCell>
               <TableCell align='center'></TableCell>
               <TableCell align='center'>{totalh}</TableCell>
               <TableCell align='center'>{totalp}%</TableCell>
+              <TableCell align='center'></TableCell>
+              <TableCell align='center'></TableCell>
+              <TableCell align='center'></TableCell>
+              <TableCell align='center'>{totalfxXm} pts x <br /> participantes</TableCell>
+              <TableCell align='center'>pts</TableCell>
+              <TableCell align='center'>pts²</TableCell>
+              <TableCell align='center'>participantes <br />x pts²</TableCell>
+              <TableCell align='center'>{totalfXmminProd2}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

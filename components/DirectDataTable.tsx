@@ -19,7 +19,7 @@ const DirectDataTable: FC<DirectDataTableProps> = ({ tableData }) => {
   const totalh = tableData.reduce((acc, data) => acc + data.h!, 0).toFixed(2)
   const totalp = tableData.reduce((acc, data) => acc + data.p!, 0)
   const totalfxX = tableData.reduce((acc, data) => acc + data.fxX!, 0)
-  const totlafxminProd2 = tableData.reduce((acc, data) => acc + data.fxminProd2!, 0)
+  const totalfxminProd2 = tableData.reduce((acc, data) => acc + data.fxminProd2!, 0)
   const tableHead = [
     'n',
     'X',
@@ -90,7 +90,7 @@ const DirectDataTable: FC<DirectDataTableProps> = ({ tableData }) => {
               <TableCell align='center'>pts</TableCell>
               <TableCell align='center'>pts²</TableCell>
               <TableCell align='center'>participantes <br />x pts²</TableCell>
-              <TableCell align='center'>{totlafxminProd2}</TableCell>
+              <TableCell align='center'>{totalfxminProd2}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

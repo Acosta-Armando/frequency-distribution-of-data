@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Container from './common/Container'
 import Title from './common/Title'
 import Button from './common/Button'
@@ -8,6 +8,7 @@ import {
   calculateMedian,
   calculateModa,
   createGroupedArrays,
+  handleCalculateLiFi,
   handleKeyPress,
   roundNumber,
 } from '@/utils/utils'
@@ -17,19 +18,28 @@ import GroupedDataTable from './GroupedDataTable'
 import { createDirectTable, createGroupedTable } from '@/utils/createTables'
 import { DirectDataFrequency, GroupedDataFrequency } from '@/interface'
 import pushToast from '@/utils/pushToast'
+import { work1, work2 } from '@/utils/work'
 
 const Main = () => {
+  const isWork = false
+  const workHome = work2
+  let round = []
+  for (let work in workHome) {
+    round.push(roundNumber(workHome[work]))
+  }
+  const initialNumbersArr = isWork ? workHome : []
+  const initialRound = isWork ? round : []
   // input and general values
   const [inputValue, setInputValue] = useState<number | ''>('')
-  const [numbersArr, setNumbersArr] = useState<Array<number>>([])
-  const [roundedNumbersArr, setRoundedNumbersArr] = useState<Array<number>>([])
+  const [numbersArr, setNumbersArr] = useState<Array<number>>(initialNumbersArr)
+  const [roundedNumbersArr, setRoundedNumbersArr] = useState<Array<number>>(initialRound)
   const N = roundedNumbersArr.length
   // direct data results
   const [directDataResults, setDirectDataResults] = useState<Array<DirectDataFrequency>>([])
   const [directDataPromedio, setDirectDataPromedio] = useState<number>(0)
-  const [median, setMedian] = useState<number>(0)
-  const [moda, setModa] = useState<Array<number>>([])
-  const desviacion = directDataResults.reduce((acc, data) => acc + data.fxminProd2!, 0) / N
+  const [directMedian, setDirectMedian] = useState<number>(0)
+  const [directModa, setDirectModa] = useState<Array<number>>([])
+  const directDeviation = directDataResults.reduce((acc, data) => acc + data.fxminProd2!, 0) / N
   // grouped data results
   const [ni, setNi] = useState<number | '' | undefined>('')
   const [nota, setNota] = useState<{ Xi: number; Xs: number }>({
@@ -39,26 +49,45 @@ const Main = () => {
   const [aT, setAT] = useState<number>(0)
   const [i, setI] = useState<number>(0)
   const [groupedDataResults, setGroupedDataResults] = useState<Array<GroupedDataFrequency>>([])
+  const [groupedDataPromedio, setGroupedDataPromedio] = useState<number>(0)
+  const N2 = N / 2
+  const [li, setLi] = useState<number | null>(null)
+  const [fi, setFi] = useState<number | null>(null)
+  const [f, setF] = useState<number | null>(null)
+  const groupedMedian = li! + ((N2 - fi!) / f!) * i
+  const groupedDeviation = groupedDataResults.reduce((acc, data) => acc + data.fXmminProd2!, 0) / N
+
   const viewCreateButtons = directDataResults.length === 0 && groupedDataResults.length === 0
 
   const otherDirectData = [
     { title: 'Media aritmética (X̅)', value: `${directDataPromedio} pts` },
-    { title: 'Mediana (md)', value: `${median} pts` },
+    { title: 'Mediana (md)', value: `${directMedian} pts` },
     {
       title: 'Moda (X₀)',
-      value: moda.map((value) => `${value} pts`).join(', '),
+      value: directModa.map((value) => `${value} pts`).join(', '),
     },
     {
       title: 'Desviacion tipica (S)',
-      value: `${Math.sqrt(desviacion).toFixed(2)} pts`,
+      value: `${Math.sqrt(directDeviation).toFixed(2)} pts`,
     },
   ]
-  
+
   const otherGroupedData = [
+    { title: 'ni', value: `${ni}` },
     { title: 'Xi', value: `${nota.Xi} pts` },
     { title: 'Xs', value: `${nota.Xs} pts` },
     { title: 'At', value: `${aT} pts` },
     { title: 'i', value: `${i} pts` },
+    { title: '', value: `` },
+    { title: 'Media aritmética (X̅)', value: `${groupedDataPromedio} pts` },
+    { title: 'Mediana (md)', value: `${groupedMedian} pts` },
+    { title: 'fm', value: `${12} participantes` },
+    { title: 'Moda (X₀1)', value: `${11.05} pts` },
+    { title: 'Moda (X₀2)', value: `${37.94} pts` },
+    {
+      title: 'Desviacion tipica (S)',
+      value: `${Math.sqrt(groupedDeviation).toFixed(2)} pts`,
+    },
   ]
 
   const handleInsertValue = () => {
@@ -83,8 +112,8 @@ const Main = () => {
     setRoundedNumbersArr([])
     setDirectDataResults([])
     setDirectDataPromedio(0)
-    setMedian(0)
-    setModa([])
+    setDirectMedian(0)
+    setDirectModa([])
     setNi('')
     setNota({ Xi: 0, Xs: 0 })
     setAT(0)
@@ -99,9 +128,9 @@ const Main = () => {
       setDirectDataPromedio
     )
     const newMedian = calculateMedian(roundedNumbersArr)
-    setMedian(newMedian)
+    setDirectMedian(newMedian)
     const newModa = calculateModa(roundedNumbersArr)
-    setModa(newModa)
+    setDirectModa(newModa)
   }
 
   const handleCreateGroupedTable = () => {
@@ -120,9 +149,20 @@ const Main = () => {
     createGroupedTable(
       roundedNumbersArr,
       newGroupedArray,
-      setGroupedDataResults
+      setGroupedDataResults,
+      setGroupedDataPromedio
     )
   }
+
+  useEffect(() => {
+    handleCalculateLiFi(
+      groupedDataResults,
+      N2,
+      setLi,
+      setFi,
+      setF
+    )
+  }, [groupedDataResults])
 
   const handleEraser = () => {
     setNumbersArr((prevArray) => prevArray.slice(0, -1))
@@ -218,7 +258,8 @@ const Main = () => {
             <div>
               {otherGroupedData.map((data, idx) => (
                 <h2 key={idx} className='text-semibold text-lg md:text-xl'>
-                  {data.title}: {data.value}
+                  {data.title}
+                  {data.title !== '' ? ': ' : <br />} {data.value}
                 </h2>
               ))}
             </div>

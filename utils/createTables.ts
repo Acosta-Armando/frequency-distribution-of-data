@@ -42,10 +42,10 @@ export const createDirectTable = (
   resultArray.forEach((item) => {
     cumulativeF += item.f
     item.F = cumulativeF // Actualizar F
-    item.h = (item.f / N)
-    item.p = (item.h * 100)
-    item.H = (item.F / N)
-    item.P = (item.H * 100)
+    item.h = item.f / N
+    item.p = item.h * 100
+    item.H = item.F / N
+    item.P = (item.H * 100).toFixed(2)
     item.fxX = item.f * item.X
   })
 
@@ -65,7 +65,8 @@ export const createDirectTable = (
 export const createGroupedTable = (
   roundedNumbersArr: Array<number>,
   groupedArray: Array<number[]>,
-  setResults: (value: Array<GroupedDataFrequency>) => void
+  setResults: (value: Array<GroupedDataFrequency>) => void,
+  setPromedio: (value: number) => void
 ) => {
   const results: GroupedDataFrequency[] = []
   const N = roundedNumbersArr.length // Total de grupos
@@ -84,10 +85,12 @@ export const createGroupedTable = (
     cumulativeF += f
     const F = cumulativeF
     // Calcular h, p, H, P
-    const h = N > 0 ? (f / N) : 0
-    const p = (h * 100)
-    const H = N > 0 ? (F / N) : 0
-    const P = (H * 100)
+    const h = N > 0 ? f / N : 0
+    const p = h * 100
+    const H = N > 0 ? F / N : 0
+    const P = H * 100
+    const Xm = (XiXs[0] + XiXs[1]) / 2
+    const fxXm = f * Xm
     // Agregar el objeto al resultado
     results.push({
       XiXs,
@@ -98,6 +101,25 @@ export const createGroupedTable = (
       p,
       H,
       P,
+      Xm,
+      fxXm,
+    })
+
+    const totalfxXm = results.reduce((acc, data) => acc + data.fxXm!, 0)
+    const promedio = roundNumber(totalfxXm / N)
+    setPromedio(promedio)
+
+    results.forEach((result, index) => {
+      const XmminProd = result.Xm - promedio
+      const XmminProd2 = XmminProd * XmminProd
+      const fXmminProd2 = result.f * XmminProd2
+      // Actualizar el objeto con las nuevas propiedades
+      results[index] = {
+        ...result,
+        XmminProd, // Agregado
+        XmminProd2, // Agregado
+        fXmminProd2, // Agregado
+      }
     })
   })
   setResults(results)
