@@ -1,4 +1,3 @@
-'use client'
 import cn from 'classnames'
 import { ComponentType, HTMLAttributes, ReactElement } from 'react'
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import Container from '../common/Container'
+import Container from '../ui/Container'
 
 const Navbar = () => {
   return (

@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import Title from './common/Title'
+import Title from './ui/Title'
 
 interface ValuesGridProps {
   title: string

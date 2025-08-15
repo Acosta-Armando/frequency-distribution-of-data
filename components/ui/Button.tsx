@@ -1,3 +1,4 @@
+'use client'
 import React, { Children, FC, PropsWithChildren } from 'react'
 
 interface ButtonProps extends PropsWithChildren {

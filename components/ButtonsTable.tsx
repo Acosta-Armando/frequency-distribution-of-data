@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import Button from './common/Button'
+import Button from './ui/Button'
 import { DirectDataFrequency, GroupedDataFrequency } from '@/interface'
 
 interface ButtonsTableProps {
