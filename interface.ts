@@ -5,7 +5,7 @@ export interface DirectDataFrequency {
   h?: number
   p?: number
   H?: number
-  P?: number
+  P?: number | string
   fxX?: number
   XminProd?: number
   XminProd2?: number
@@ -21,4 +21,9 @@ export interface GroupedDataFrequency {
   p: number
   H: number
   P: number
+  Xm: number
+  fxXm: number
+  XmminProd?: number
+  XmminProd2?: number
+  fXmminProd2?: number
 }
