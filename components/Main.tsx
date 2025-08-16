@@ -166,6 +166,10 @@ const Main = () => {
       pushToast.error('Please insert the interval number (ni)')
       return
     }
+    if (ni > N) {
+      pushToast.error('Interval number (ni) cannot be greater than the number of data points')
+      return
+    }
     const minNumber = Math.min(...roundedNumbersArr)
     const maxNumber = Math.max(...roundedNumbersArr)
     setNota({ Xi: minNumber, Xs: maxNumber })
