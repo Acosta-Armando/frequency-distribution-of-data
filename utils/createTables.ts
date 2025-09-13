@@ -62,7 +62,7 @@ export const createDirectTable = (
 
   // Calculate the average (mean).
   const totalfxX = resultArray.reduce((acc, data) => acc + data.fxX!, 0);
-  const promedio = roundNumber(totalfxX / N);
+  const promedio = totalfxX / N;
   setPromedio(promedio);
 
   // Calculate deviation from the mean for variance and standard deviation.
@@ -105,10 +105,10 @@ export const createGroupedTable = (
     const F = cumulativeF;
 
     // Calculate relative frequencies and percentages.
-    const h = N > 0 ? f / N : 0;
-    const p = h * 100;
-    const H = N > 0 ? F / N : 0;
-    const P = H * 100;
+    const h = N > 0 ? Number((f / N).toFixed(3)) : 0;
+    const p = Number((h * 100).toFixed(2));
+    const H = N > 0 ? Number((F / N).toFixed(2)) : 0;
+    const P = Number((H * 100).toFixed(2));
 
     // Calculate the class midpoint (Xm).
     const Xm = (XiXs[0] + XiXs[1]) / 2;
@@ -133,15 +133,18 @@ export const createGroupedTable = (
 
   // Calculate the average (mean) for grouped data.
   const totalfxXm = results.reduce((acc, data) => acc + data.fxXm!, 0);
-  const promedio = roundNumber(totalfxXm / N);
+  const promedio = totalfxXm / N;
   setPromedio(promedio);
 
   // Calculate deviation from the mean for variance and standard deviation.
   results.forEach((result, index) => {
-    const XmminProd = result.Xm - promedio;
-    const XmminProd2 = XmminProd * XmminProd;
-    const fXmminProd2 = result.f * XmminProd2;
-
+    const XmminProd = Number((result.Xm - promedio).toFixed(0))
+    const XmminProd2 = Number((XmminProd * XmminProd).toFixed(0))
+    const fXmminProd2 = Number((result.f * XmminProd2).toFixed(0))
+    
+    
+    
+    
     // Update the object with the new properties.
     results[index] = {
       ...result,

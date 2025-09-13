@@ -25,39 +25,44 @@ import { work1, work2 } from '@/utils/work'
  * Manages user input, data processing, and rendering of direct and grouped frequency tables.
  */
 const Main = () => {
+  const isWork = true
+  const workHome = work2
+  let round = []
+  for (let work in workHome) {
+    round.push(roundNumber(workHome[work]))
+  }
+  const initialNumbersArr = isWork ? workHome : []
+  const initialRound = isWork ? round : []
+
   // State variables for input and general data management
-  const [inputValue, setInputValue] = useState<number | ''>('') // Current value in the input field
-  const [numbersArr, setNumbersArr] = useState<Array<number>>([]) // Original numbers entered by the user
-  const [roundedNumbersArr, setRoundedNumbersArr] = useState<Array<number>>([]) // Rounded numbers, used for calculations
-  const N = roundedNumbersArr.length // Total number of data points
+  const [inputValue, setInputValue] = useState<number | ''>('')
+  const [numbersArr, setNumbersArr] = useState<Array<number>>(initialNumbersArr)
+  const [roundedNumbersArr, setRoundedNumbersArr] = useState<Array<number>>(initialRound)
+  const N = roundedNumbersArr.length
 
   // State variables for direct data results
-  const [directDataResults, setDirectDataResults] = useState<Array<DirectDataFrequency>>([]) // Results for the direct frequency table
-  const [directDataPromedio, setDirectDataPromedio] = useState<number>(0) // Mean for direct data
-  const [directMedian, setDirectMedian] = useState<number>(0) // Median for direct data
-  const [directModa, setDirectModa] = useState<Array<number>>([]) // Mode(s) for direct data
-  // Calculate direct deviation (variance)
+  const [directDataResults, setDirectDataResults] = useState<Array<DirectDataFrequency>>([])
+  const [directDataPromedio, setDirectDataPromedio] = useState<number>(0)
+  const [directMedian, setDirectMedian] = useState<number>(0)
+  const [directModa, setDirectModa] = useState<Array<number>>([])
   const directDeviation = directDataResults.reduce((acc, data) => acc + (data.fxminProd2 || 0), 0) / N
 
   // State variables for grouped data results
-  const [ni, setNi] = useState<number | '' | undefined>('') // Number of intervals for grouped data
-  const [nota, setNota] = useState<{ Xi: number, Xs: number }>({ Xi: 0, Xs: 0 }) // Min (Xi) and Max (Xs) values
-  const [aT, setAT] = useState<number>(0) // Amplitude Total (Range)
-  const [i, setI] = useState<number>(0) // Class width (interval size)
-  const [groupedDataResults, setGroupedDataResults] = useState<Array<GroupedDataFrequency>>([]) // Results for the grouped frequency table
-  const [groupedDataPromedio, setGroupedDataPromedio] = useState<number>(0) // Mean for grouped data
+  const [ni, setNi] = useState<number | '' | undefined>('')
+  const [nota, setNota] = useState<{ Xi: number, Xs: number }>({ Xi: 0, Xs: 0 })
+  const [aT, setAT] = useState<number>(0)
+  const [i, setI] = useState<number>(0)
+  const [groupedDataResults, setGroupedDataResults] = useState<Array<GroupedDataFrequency>>([])
+  const [groupedDataPromedio, setGroupedDataPromedio] = useState<number>(0)
 
   // Variables for grouped data median calculation
   const N2 = N / 2 // N/2 for median formula
-  const [li, setLi] = useState<number | null>(null) // Lower limit of the median class
-  const [fi, setFi] = useState<number | null>(null) // Cumulative frequency of the class before the median class
-  const [f, setF] = useState<number | null>(null) // Frequency of the median class
-  // Calculate grouped median
-  const groupedMedian = (li !== null && fi !== null && f !== null && i !== 0) ? (li + ((N2 - fi) / f) * i) : 0
-  // Calculate grouped deviation (variance)
-  const groupedDeviation = groupedDataResults.reduce((acc, data) => acc + (data.fXmminProd2 || 0), 0) / N
+  const [li, setLi] = useState<number | null>(null)
+  const [fi, setFi] = useState<number | null>(null)
+  const [f, setF] = useState<number | null>(null)
 
-  // Determine if the initial buttons (Insert, Eraser) should be shown
+  const groupedMedian = (li !== null && fi !== null && f !== null && i !== 0) ? (li + ((N2 - fi) / f) * i) : 0
+  const groupedDeviation = groupedDataResults.reduce((acc, data) => acc + (data.fXmminProd2 || 0), 0) / N
   const viewCreateButtons = directDataResults.length === 0 && groupedDataResults.length === 0
 
   // Data for displaying other direct data statistics
@@ -85,8 +90,8 @@ const Main = () => {
     { title: 'Arithmetic Mean (X̅)', value: `${groupedDataPromedio} pts` },
     { title: 'Median (md)', value: `${groupedMedian.toFixed(2)} pts` },
     { title: 'fm', value: `${12} participants` },
-    { title: 'Mode (X₀1)', value: `${11.05} pts` },
-    { title: 'Mode (X₀2)', value: `${37.94} pts` },
+    // { title: 'Mode (X₀1)', value: `${11.05} pts` },
+    // { title: 'Mode (X₀2)', value: `${37.94} pts` },
     {
       title: 'Standard Deviation (S)',
       value: `${Math.sqrt(groupedDeviation).toFixed(2)} pts`,
@@ -184,6 +189,7 @@ const Main = () => {
       setGroupedDataResults,
       setGroupedDataPromedio
     )
+
   }
 
   /**
@@ -213,7 +219,7 @@ const Main = () => {
   return (
     <Container className='py-5 flex flex-col gap-8 h-full'>
       {/* Input section for numbers */}
-      {viewCreateButtons && ( // Only show input if no tables have been created yet
+      {viewCreateButtons && (
         <section className='w-full flex flex-col gap-2'>
           <Title title='Insert numbers here:' />
           <div className='flex flex-col md:flex-row gap-2'>
@@ -233,7 +239,7 @@ const Main = () => {
                 Insert
               </Button>
             </div>
-            {roundedNumbersArr.length > 0 && ( // Show eraser button only if there are numbers
+            {roundedNumbersArr.length > 0 && (
               <Button
                 type={'reset'}
                 onClick={handleEraser}
@@ -247,7 +253,7 @@ const Main = () => {
       )}
 
       {/* Input section for interval number (ni) for grouped data */}
-      {groupedDataResults.length === 0 && ( // Only show ni input if grouped table hasn't been created
+      {groupedDataResults.length === 0 && (
         <section className='w-full flex flex-col gap-2'>
           <Title title='Insert interval number (ni) here:' />
           <div className='flex flex-col md:flex-row gap-2'>
@@ -270,7 +276,7 @@ const Main = () => {
       )}
 
       {/* Buttons to create frequency tables and clear data */}
-      {roundedNumbersArr.length > 0 && ( // Only show table creation buttons if there are numbers
+      {roundedNumbersArr.length > 0 && (
         <ButtonsTable
           handleCreateDirectTable={handleCreateDirectTable}
           handleCreateGroupedTable={handleCreateGroupedTable}
